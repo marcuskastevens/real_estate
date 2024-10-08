@@ -8,6 +8,6 @@ class TaxBenefitModel:
         uncertainty_discount_factor = 0.5
         depreciation_deduction = property_value / n
         interest_deduction = interest_expense * 0.3
-        property_tax_deduction = min(10_000, property_value * 0.02 / 12)
+        property_tax_deduction = min(10_000.0, property_value * 0.02 / 12)
 
-        return 0  # interest_deduction + depreciation_deduction * uncertainty_discount_factor + property_tax_deduction
+        return interest_deduction + depreciation_deduction * uncertainty_discount_factor + property_tax_deduction
