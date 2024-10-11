@@ -58,7 +58,7 @@ class MonteCarloSimulator:
         self.property_tax_expense = property_tax_expense
         self.miscellaneous_expense = miscellaneous_expense
 
-        self.property_value: float = self.debt + self.equity
+        self.total_value: float = self.debt + self.equity
         self.shape: Tuple[int, int] = (self.n_periods, self.n_simulations)
         self.ammortization_schedule = AmmortizationSchedule(n_periods=self.n_periods, debt=self.debt, rate=self.rate)
 
@@ -171,10 +171,10 @@ class MonteCarloSimulator:
         self.cumulative_total_return_on_initial_equity = pd.DataFrame(self.cumulative_total_return_on_initial_equity)
 
         self.cash_cagr: pd.Series = (1 + self.cumulative_cash_return_on_initial_equity.iloc[-1]) ** (
-            1 / (self.n_periods / 12)
+            1 / (self.n_periods / 30)
         ) - 1
         self.total_cagr: pd.Series = (1 + self.cumulative_total_return_on_initial_equity.iloc[-1]) ** (
-            1 / (self.n_periods / 12)
+            1 / (self.n_periods / 30)
         ) - 1
 
         return
