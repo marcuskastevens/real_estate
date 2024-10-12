@@ -11,8 +11,8 @@ from typing import Dict, Optional, Tuple, Union
 import numpy as np
 
 # Local dependencies
-from real_estate.utils import simulate_random_variable
 from real_estate.models.random_variables import RandomVariable
+from real_estate.utils.model_utils import simulate_random_variable
 
 
 class ExpenseModel:

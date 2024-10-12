@@ -1,6 +1,6 @@
 # Built-in dependencies
-from abc import ABC, abstractmethod
 from typing import Optional, Tuple
+from abc import ABC, abstractmethod
 
 # External dependencies
 import numpy as np
