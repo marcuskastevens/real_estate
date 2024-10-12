@@ -1,13 +1,27 @@
+# Built-in dependencies
+from typing import Union
+
+# External dependencies
+import numpy as np
+
+
 class TaxBenefitModel:
 
-    def __call__(self, n: int, interest_expense: float, property_value: float) -> float:
+    def __init__(self, n: int, property_value: float) -> None:
+
+        self.n = n
+        self.property_value = property_value
+
+        return
+
+    def __call__(self, interest_expense: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """
         TODO: determine the true calculation - this is a rough proxy for now.
         """
 
         uncertainty_discount_factor = 1.0  # 0.5
-        depreciation_deduction = property_value / n
+        depreciation_deduction = self.property_value / self.n
         interest_deduction = interest_expense * 0.3
-        property_tax_deduction = min(10_000.0, property_value * 0.02 / 12)
+        property_tax_deduction = min(10_000.0, self.property_value * 0.02 / 12)
 
         return interest_deduction + depreciation_deduction * uncertainty_discount_factor + property_tax_deduction

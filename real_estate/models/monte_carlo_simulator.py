@@ -6,11 +6,10 @@ import numpy as np
 import pandas as pd
 
 # Local dependencies
-from .expense_model import ExpenseModel
-from .revenue_model import RevenueModel
-from .random_variables import RandomVariable
-from .tax_benefit_model import TaxBenefitModel
-from .ammortization_model import AmmortizationSchedule
+from real_estate.models.expense_model import ExpenseModel
+from real_estate.models.revenue_model import RevenueModel
+from real_estate.models.tax_benefit_model import TaxBenefitModel
+from real_estate.models.ammortization_model import AmmortizationSchedule
 
 
 class MonteCarloSimulator:
@@ -27,40 +26,30 @@ class MonteCarloSimulator:
         self,
         debt: float,
         rate: float,
-        rent: float,
         equity: float,
         n_periods: int,
         n_simulations: int,
         expense_model: ExpenseModel,
         revenue_model: RevenueModel,
-        occupancy_rate: RandomVariable,
-        utility_expense: RandomVariable,
-        insurance_expense: RandomVariable,
         tax_benefit_model: TaxBenefitModel,
-        maintenance_expense: RandomVariable,
-        property_tax_expense: RandomVariable,
-        miscellaneous_expense: RandomVariable,
     ) -> None:
 
         self.debt = debt
         self.rate = rate
-        self.rent = rent
         self.equity = equity
         self.n_periods = n_periods
         self.n_simulations = n_simulations
         self.expense_model = expense_model
         self.revenue_model = revenue_model
-        self.occupancy_rate = occupancy_rate
-        self.utility_expense = utility_expense
-        self.insurance_expense = insurance_expense
         self.tax_benefit_model = tax_benefit_model
-        self.maintenance_expense = maintenance_expense
-        self.property_tax_expense = property_tax_expense
-        self.miscellaneous_expense = miscellaneous_expense
 
         self.total_value: float = self.debt + self.equity
         self.shape: Tuple[int, int] = (self.n_periods, self.n_simulations)
-        self.ammortization_schedule = AmmortizationSchedule(n_periods=self.n_periods, debt=self.debt, rate=self.rate)
+        self.ammortization_schedule = AmmortizationSchedule(
+            n_periods=self.n_periods,
+            debt=self.debt,
+            rate=self.rate,
+        )
 
         self.revenue_simulation: Optional[Union[np.ndarray, pd.DataFrame]] = None
         self.cash_flow_simulation: Optional[Union[np.ndarray, pd.DataFrame]] = None
@@ -70,17 +59,15 @@ class MonteCarloSimulator:
         return
 
     def _simulate(self) -> Tuple[float, float, float]:
-        """
-        Capture
-        """
 
         revenue: Union[float, np.ndarray] = self.revenue_model(
             rent=self.rent,
             occupancy_rate=self.occupancy_rate.simulate(shape=self.shape),
         )
 
-        # TODO: implement this in a vectorized manner - self.tax_benefit_model(n_periods=self.n_periods, interest_expense=interest_expense, property_value=self.property_value)
-        tax_benefit: Union[float, np.ndarray] = np.zeros(shape=self.shape) + 100.0
+        tax_benefit = self.tax_benefit_model(
+            n_periods=self.n_periods, interest_expense=interest_expense, property_value=self.property_value
+        )
 
         interest_expense: np.ndarray = np.reshape(
             np.array(self.ammortization_schedule.schedule["interest"]),
@@ -92,35 +79,7 @@ class MonteCarloSimulator:
             newshape=(-1, 1),
         )
 
-        operating_expense: Union[float, np.ndarray] = self.expense_model(
-            hoa_expense=0,
-            loan_expense=0,
-            legal_expense=0,
-            permit_expense=0,
-            leasing_expense=0,
-            security_expense=0,
-            software_expense=0,
-            appraisal_expense=0,
-            marketing_expense=0,
-            furnishing_expense=0,
-            inspection_expense=0,
-            accounting_expense=0,
-            landscaping_expense=0,
-            refinancing_expense=0,
-            advertising_expense=0,
-            pest_control_expense=0,
-            tenant_incentive_expense=0,
-            property_management_expense=0,
-            capital_expenditure_expense=0,
-            insurance_deductible_expense=0,
-            regulatory_compliance_expense=0,
-            professional_development_expense=0,
-            utility_expense=self.utility_expense.simulate(shape=self.shape),
-            insurance_expense=self.insurance_expense.simulate(shape=self.shape),
-            maintenance_expense=self.maintenance_expense.simulate(shape=self.shape),
-            property_tax_expense=self.property_tax_expense.simulate(shape=self.shape),
-            miscellaneous_expense=self.miscellaneous_expense.simulate(shape=self.shape),
-        )
+        operating_expense: Union[float, np.ndarray] = self.expense_model()
 
         equity: np.ndarray = np.reshape(np.array(self.ammortization_schedule.schedule["equity"]), newshape=(-1, 1))
 
@@ -129,7 +88,7 @@ class MonteCarloSimulator:
         # Total return is a function of both cash flow and increase in equity (i.e., how much principal is paid)
         total_return: np.ndarray = cash_flow + principal_expense
 
-        # TODO: clarify calculation here
+        # TODO: denominator omits the equity that was earned from each period
         cash_return_on_equity: np.ndarray = cash_flow / (equity + self.equity - principal_expense)
         total_return_on_equity: np.array = total_return / (equity + self.equity - principal_expense)
 
