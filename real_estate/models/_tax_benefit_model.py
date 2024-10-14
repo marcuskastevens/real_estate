@@ -7,14 +7,23 @@ import numpy as np
 
 class TaxBenefitModel:
 
-    def __init__(self, n: int, property_value: float) -> None:
+    def __init__(self, n: int, property_value: Union[float, int]) -> None:
 
         self.n = n
         self.property_value = property_value
 
+        self._validate_kwargs()
+
         return
 
-    def __call__(self, interest_expense: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+    def _validate_kwargs(self) -> None:
+
+        assert isinstance(self.n, int), self.n
+        assert isinstance(self.property_value, (float, int)), self.property_value
+
+        return
+
+    def __call__(self, interest_expense: Union[float, int, np.ndarray]) -> Union[float, np.ndarray]:
         """
         TODO: determine the true calculation - this is a rough proxy for now.
         """

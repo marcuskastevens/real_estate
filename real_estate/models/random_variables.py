@@ -101,10 +101,10 @@ class BoundedNormalRandomVariable(RandomVariable):
 
         random_variable = np.random.normal(loc=self.mu, scale=self.sigma, size=shape)
 
-        if shape:
+        # While there are values outside of the bounds, regenerate only those values
+        out_of_bounds = (random_variable < self.lower_bound) | (random_variable > self.upper_bound)
 
-            # While there are values outside of the bounds, regenerate only those values
-            out_of_bounds = (random_variable <= self.lower_bound) | (random_variable >= self.upper_bound)
+        if shape:
 
             while np.any(out_of_bounds):
 
@@ -121,7 +121,7 @@ class BoundedNormalRandomVariable(RandomVariable):
         else:
 
             # If the random variable is out-of-bounds, recursively re-sample
-            if self.lower_bound <= random_variable <= self.upper_bound:
+            if out_of_bounds:
                 random_variable = self.simulate(shape=shape)
 
         return random_variable

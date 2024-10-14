@@ -6,10 +6,10 @@ import numpy as np
 import pandas as pd
 
 # Local dependencies
-from real_estate.models.expense_model import ExpenseModel
-from real_estate.models.revenue_model import RevenueModel
-from real_estate.models.tax_benefit_model import TaxBenefitModel
-from real_estate.models.ammortization_model import AmmortizationSchedule
+from real_estate.models._expense_model import ExpenseModel
+from real_estate.models._revenue_model import RevenueModel
+from real_estate.models._tax_benefit_model import TaxBenefitModel
+from real_estate.models._ammortization_model import AmmortizationSchedule
 
 
 class MonteCarloSimulator:
@@ -66,7 +66,9 @@ class MonteCarloSimulator:
         )
 
         tax_benefit = self.tax_benefit_model(
-            n_periods=self.n_periods, interest_expense=interest_expense, property_value=self.property_value
+            n_periods=self.n_periods,
+            interest_expense=interest_expense,
+            property_value=self.property_value,
         )
 
         interest_expense: np.ndarray = np.reshape(
