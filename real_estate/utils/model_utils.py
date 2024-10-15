@@ -10,7 +10,7 @@ from real_estate.models.random_variables import RandomVariable
 
 def simulate_random_variable(
     random_variable: Optional[Union[float, int, RandomVariable]],
-    shape: Optional[Tuple[int, int]],
+    shape: Optional[Tuple[int, int]] = None,
 ) -> Union[float, int, np.ndarray]:
 
     assert isinstance(shape, Tuple) or shape is None, shape
