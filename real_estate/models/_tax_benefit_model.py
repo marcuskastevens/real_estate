@@ -1,3 +1,7 @@
+"""
+TODO: differentiate between property value and total value for tax benefit calculation purposes.
+"""
+
 # Built-in dependencies
 from typing import Union
 
@@ -7,7 +11,7 @@ import numpy as np
 
 class TaxBenefitModel:
 
-    def __init__(self, n: int, property_value: Union[float, int]) -> None:
+    def __init__(self, n: int, property_value: float) -> None:
 
         self.n = n
         self.property_value = property_value
@@ -19,11 +23,11 @@ class TaxBenefitModel:
     def _validate_kwargs(self) -> None:
 
         assert isinstance(self.n, int), self.n
-        assert isinstance(self.property_value, (float, int)), self.property_value
+        assert isinstance(self.property_value, float), self.property_value
 
         return
 
-    def __call__(self, interest_expense: Union[float, int, np.ndarray]) -> Union[float, np.ndarray]:
+    def __call__(self, interest_expense: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """
         TODO: determine the true calculation - this is a rough proxy for now.
         """

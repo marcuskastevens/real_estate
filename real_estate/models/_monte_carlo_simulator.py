@@ -4,6 +4,7 @@ from typing import Optional, Union, Tuple
 # External dependencies
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # Local dependencies
 from real_estate.models._expense_model import ExpenseModel
@@ -60,30 +61,21 @@ class MonteCarloSimulator:
 
     def _simulate(self) -> Tuple[float, float, float]:
 
-        revenue: Union[float, np.ndarray] = self.revenue_model(
-            rent=self.rent,
-            occupancy_rate=self.occupancy_rate.simulate(shape=self.shape),
-        )
+        revenue: Union[float, np.ndarray] = self.revenue_model(shape=self.shape)
 
-        tax_benefit = self.tax_benefit_model(
-            n_periods=self.n_periods,
-            interest_expense=interest_expense,
-            property_value=self.property_value,
-        )
-
+        equity: np.ndarray = np.reshape(np.array(self.ammortization_schedule.schedule["equity"]), newshape=(-1, 1))
         interest_expense: np.ndarray = np.reshape(
             np.array(self.ammortization_schedule.schedule["interest"]),
             newshape=(-1, 1),
         )
-
         principal_expense: np.ndarray = np.reshape(
             np.array(self.ammortization_schedule.schedule["principal"]),
             newshape=(-1, 1),
         )
 
-        operating_expense: Union[float, np.ndarray] = self.expense_model()
+        tax_benefit: Union[float, np.ndarray] = self.tax_benefit_model(interest_expense=interest_expense)
 
-        equity: np.ndarray = np.reshape(np.array(self.ammortization_schedule.schedule["equity"]), newshape=(-1, 1))
+        operating_expense: Union[float, np.ndarray] = self.expense_model(shape=self.shape)
 
         cash_flow: np.ndarray = revenue + tax_benefit - operating_expense - interest_expense - principal_expense
 
@@ -131,12 +123,8 @@ class MonteCarloSimulator:
         self.cumulative_cash_return_on_initial_equity = pd.DataFrame(self.cumulative_cash_return_on_initial_equity)
         self.cumulative_total_return_on_initial_equity = pd.DataFrame(self.cumulative_total_return_on_initial_equity)
 
-        self.cash_cagr: pd.Series = (1 + self.cumulative_cash_return_on_initial_equity.iloc[-1]) ** (
-            1 / (self.n_periods / 30)
-        ) - 1
-        self.total_cagr: pd.Series = (1 + self.cumulative_total_return_on_initial_equity.iloc[-1]) ** (
-            1 / (self.n_periods / 30)
-        ) - 1
+        self.cash_cagr: pd.Series = (1 + self.cumulative_cash_return_on_initial_equity.iloc[-1]) ** (1 / 30) - 1
+        self.total_cagr: pd.Series = (1 + self.cumulative_total_return_on_initial_equity.iloc[-1]) ** (1 / 30) - 1
 
         return
 
@@ -158,16 +146,25 @@ class MonteCarloSimulator:
             f"Periodic Cash Flow Standard Deviation: {np.std(self.cash_flow_simulation.to_numpy().flatten(), ddof=1)}"
         )
         print(
-            f"Cash Flow Mean Sharpe Ratio: {np.mean(self.cash_flow_simulation) / np.std(self.cash_flow_simulation.to_numpy().flatten(), ddof=1)}"
+            f"Cash Flow Mean Annualized Sharpe Ratio: {np.sqrt(12) * np.mean(self.cash_flow_simulation) / np.std(self.cash_flow_simulation.to_numpy().flatten(), ddof=1)}"
         )
 
         self.cash_flow_simulation.plot(title="Periodic Cash Flows", legend=False)
+        plt.show()
+
         self.cash_flow_simulation.plot(kind="hist", title="Periodic Cash Flows", legend=False)
+        plt.show()
+
         self.cash_flow_simulation.cumsum().plot(title="Cumulative Cash Flows", legend=False)
+        plt.show()
 
         self.revenue_simulation.plot(kind="hist", title="Periodic Revenue", legend=False)
-        self.expense_simulation.plot(kind="hist", title="Periodic Expenses", legend=False)
-        self.expense_simulation.plot(title="Periodic Expenses", legend=False)
+        plt.show()
+
+        self.operating_expense_simulation.plot(kind="hist", title="Periodic Expenses", legend=False)
+        plt.show()
+
         self.tax_benefit_simulation.plot(title="Periodic Tax Benefit", legend=False)
+        plt.show()
 
         return
